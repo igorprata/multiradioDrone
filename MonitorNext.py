@@ -1,14 +1,14 @@
-from dronekit import connect, VehicleMode, LocationGlobalRelative
-
-import time
-import socket
-import exceptions
-from tools.IEEE80211 import *
-
-# String de conexao local com o veiculo
-
+# -*- coding: utf-8 -*-
 # Set up option parsing to get connection string
 import argparse
+import exceptions
+import socket
+
+from dronekit import connect
+
+from tools.IEEE80211.IEEE80211scan import *
+
+# String de conexao local com o veiculo
 parser = argparse.ArgumentParser(description='Commands vehicle using vehicle.simple_goto.')
 parser.add_argument('--connect',
                     help="Vehicle connection target string. If not specified, SITL automatically started and used.")

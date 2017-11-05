@@ -1,7 +1,7 @@
+# -*- coding: utf-8 -*-
 import time
 
 from dronekit import VehicleMode
-
 
 def armandtakeoff(aTargetAltitude,veiculo):
 
@@ -22,7 +22,7 @@ def armandtakeoff(aTargetAltitude,veiculo):
     veiculo.mode    = VehicleMode("GUIDED")
     veiculo.armed   = True
     # Confirma se o veiculo esta armado antes de tentar Decolar: EKF ready, and the vehicle has GPS lock
-    while not veiculo.armed:
+    while not veiculo.mode.name == 'GUIDED' and not veiculo.armed:
         print "Aguardando o acionamento dos motores..."
         time.sleep(3)
     print "DECOLANDO!"

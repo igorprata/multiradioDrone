@@ -1,49 +1,66 @@
+# -*- coding: utf-8 -*-
 import argparse
 import time
 
 from navegacao import simplegoto, takeoff
-from navio2 import conecta
-from tools import sensores
+from navio2 import conecta, uavstate
 
 ##################### Codigo para Voo controlado #############################
-# String de conexao com o veiculo
-parser = argparse.ArgumentParser(description='Commanda o drone em uma rota de voo estabelecida e executa o sensoriamento.')
+parser = argparse.ArgumentParser(description='Comanda o drone em uma rota de voo estabelecida e executa o sensoriamento.')
 
 parser.add_argument('--connect',
-                    help=" Interface de conexao com o veiculo. Se nao for definida, a porta 1450 local sera automaticamente usada.")
+                    help=" Interface de conexão com o veículo. Se não for definida, a porta 1450 local será automaticamente usada. Padrão: 127.0.0.1:14550")
 parser.add_argument('--loop',
-                    help=" Define quantas vezes os dados dos sensores serao coletados em cada waypoint.")
-parser.add_argument('--interface',
-                    help=" Define qual interface de rede sera usada.")
+                    help=" Define quantas vezes os dados dos sensores serão coletados em cada waypoint. Padrão: 3")
+parser.add_argument('--WFinterface',
+                    help=" Define qual interface de rede será usada. Padrão: wlp3s0")
+parser.add_argument('--WFaddr',
+                    help=" Define qual endereco WIFI será verificado. Padrão:")
+parser.add_argument('--BTaddr',
+                    help=" Define qual endereco Bluetooth será verificado. Padrão: 00:02:72:D5:6E:5D")
 parser.add_argument('--output',
-                    help=" Define qual o tipo de saida a ser usada (tela, arquivo ou SQL).")
+                    help=" Define qual o tipo de saída a ser usada (screen, file ou SQL). Padrão: screen")
 
 args = parser.parse_args()
 
 connection_string = args.connect
 repeticao = args.loop
-interface = args.interface
+WFinterface = args.WFinterface
+WFaddr = args.WFaddr
+BTaddr = args.BTaddr
 output = args.output
 
-# Conecta em localhost se nenhuma connection string for especificada
+# Valores padroes se nao forem especificados
 if not connection_string:
     connection_string = "127.0.0.1:14550"
-print "Conectando no veiculo pelo canal: %s" % connection_string
+if not repeticao:
+    repeticao = 1
+if not WFinterface:
+    WFinterface = "wlp3s0"
+if not WFaddr:
+    WFaddr = 'C0:3F:0E:D0:D8:15' # igorlandia
+if not BTaddr:
+#    BTaddr = '00:02:72:D5:6E:5D' # rc-control???B8:5A:73:A4:E8:9D
+    BTaddr = 'B8:5A:73:A4:E8:9D'  # Galaxy Duos
+if not output:
+    output = "file"
+
+
 # Executa a conexao an aeronave e recebe a classe vehicle devolta
 veiculo = conecta.conexao(connection_string)
 
 # Listagem dos parametros de status do veiculo e modo de voo
-sensores.sensors(veiculo, repeticao, interface, output)
+uavstate.uavversion(veiculo)
 
 # Dispara a Funcao de Decolagem
-takeoff.armandtakeoff(10, veiculo)
+takeoff.armandtakeoff(8, veiculo)
 
 # espera alguns segundos para verificar a estabilidade
 time.sleep(10)
 
 # Dispara a Funcao de navegacao ponto a ponto
-simplegoto.pontoaponto(veiculo, repeticao, interface, output)
+simplegoto.pontoaponto(veiculo, repeticao, WFinterface, WFaddr, BTaddr, output)
 
 # Fecha o objeto veiculo antes de termianr o script
-print("Desconectando do Veiculo")
+print("Desconectando do Veículo")
 veiculo.close()

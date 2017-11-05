@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from dronekit import connect
 
 import time
