@@ -21,11 +21,5 @@ def wifi_dist(WFinterface, WFaddr, repeticao):
             distance = (math.pow(10, x) * 100) + c
             sum_distance = sum_distance + distance
             avg_distance = sum_distance / count
-#            print "Approximate Distance:" + str(distance)
-#            print "RSSI: " + str(rssi_wf)
-#            print "Count: " + str(count)
-#            print "Average distance=  " + str(avg_distance)
-#            print " "
         time.sleep(1)
- #   print "Average distance=  " + str(avg_distance)
     return avg_distance
