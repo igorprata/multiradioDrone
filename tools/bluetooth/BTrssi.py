@@ -2,10 +2,19 @@
 import fcntl
 import struct
 import array
-import bluetooth
-import bluetooth._bluetooth as bt
+import tools.bluetooth
+import tools.bluetooth._bluetooth as bt
 import time
 
+if not os.geteuid() == 0:
+    sys.exit("Execute como root")
+
+btlib = find_library("bluetooth")
+if not btlib:
+    raise Exception(
+        "Can't find required bluetooth libraries"
+        " (need to install bluez)"
+    )
 
 def bluetooth_rssi(addr):
     # Open hci socket
@@ -13,7 +22,7 @@ def bluetooth_rssi(addr):
     hci_fd = hci_sock.fileno()
 
     # Connect to device (to whatever you like)
-    bt_sock = bluetooth.BluetoothSocket(bluetooth.L2CAP)
+    bt_sock = tools.bluetooth.BluetoothSocket(tools.bluetooth.L2CAP)
     bt_sock.settimeout(10)
     result = bt_sock.connect((addr, 1))	# PSM 1 - Service Discovery
 

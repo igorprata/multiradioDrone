@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from navio2 import uavstate
-from tools import BTrssi
-from tools.IEEE80211 import IEEE80211scan, IEEE80211Dist
+from tools.IEEE80211 import IEEE80211scan
+from tools.bluetooth import BTrssi
 
 
 def sensors(vehicle, repeticao, WFinterface, BTaddr, output):
