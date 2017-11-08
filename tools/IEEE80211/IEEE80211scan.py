@@ -4,7 +4,7 @@ from wifi import Cell
 
 def scan_wifi(repeticao, WFinterface, output):
     if output == "screen":
-        print "Exibicao dos resultados somente em tela"
+        print "Exibicao dos resultados WIFI da interface {} somente em tela".format(WFinterface)
         for n in range(repeticao):
             for cell in Cell.all(WFinterface):
                 timestamp = int(time.time())
@@ -14,7 +14,7 @@ def scan_wifi(repeticao, WFinterface, output):
 
     if output == "file":
         with open('wifiscan.dump', "a") as f:
-            print "Exibicao dos resultados somente no arquivo: {}".format(f.name)
+            print "Exibicao dos resultados WIFI de interface {} somente no arquivo: {}".format(WFinterface,f.name)
             for n in range(repeticao):
                 for cell in Cell.all(WFinterface):
                     timestamp = int(time.time())

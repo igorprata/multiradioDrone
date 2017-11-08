@@ -4,15 +4,18 @@
 # desc: performs a simple device inquiry followed by a remote name request of
 #       each discovered device
 # $Id: inquiry.py 401 2006-05-05 19:07:48Z albert $
-#
 
-import tools.bluetooth
+import bluetooth
+
+
+########################### Ferramenta standalone que verifica o MAC Address e nome dos dispositivos Bluetooth ao redor ###########################
+
 
 print("performing inquiry...")
 
-nearby_devices = tools.bluetooth.discover_devices(duration=10, lookup_names=True, flush_cache=True)
+nearby_devices = bluetooth.discover_devices(duration=5, lookup_names=True, flush_cache=True)
 
-print("found %d devices" % len(nearby_devices))
+print("%d dispositivos encontrados" % len(nearby_devices))
 print nearby_devices
 
 for addr, name in nearby_devices:

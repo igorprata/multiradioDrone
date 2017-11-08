@@ -58,8 +58,10 @@ takeoff.armandtakeoff(8, veiculo)
 # espera alguns segundos para verificar a estabilidade
 time.sleep(10)
 
-# Dispara a Funcao de navegacao ponto a ponto
-simplegoto.pontoaponto(veiculo, repeticao, WFinterface, WFaddr, BTaddr, output)
+# Dispara a Funcao de navegacao ponto a ponto e recebe array de distancias
+results = simplegoto.pontoaponto(veiculo, repeticao, WFinterface, WFaddr, BTaddr, output)
+
+print results
 
 # Fecha o objeto veiculo antes de termianr o script
 print("Desconectando do Veículo")

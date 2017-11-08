@@ -40,25 +40,37 @@ def uavstatus (vehicle, output):
         f.close()
 
 def uavsensors (vehicle, repeticao, output):
+
+    lat = []
+    lon = []
+    alt = []
+
     if output == "screen":
         print " Localizacao Global: %s" % vehicle.location.global_frame
         print " Rangefinder distance: %s" % vehicle.rangefinder.distance
         print " Orientacao Local: %s" % vehicle.location.local_frame    #NED
-        print " Altitude (global relative frame): %s" % vehicle.location.global_relative_frame.alt
+        print " Altitude (relativa): %s" % vehicle.location.global_relative_frame.alt
+        alt.append(vehicle.location.global_relative_frame.alt)
+        lat.append(vehicle.location.global_frame.lat)
+        lon.append(vehicle.location.global_frame.lon)
 
     if output == "file":
         with open('uavsensors.dump', "a") as f:
             print "Exibicao dos sensores do VANT somente em arquivo: {}".format(f.name)
             for n in range(repeticao):
                 timestamp = int(time.time())
-                f.write("Amostra numero: {}, ".format(n + 1))
-                f.write("Timestamp: {}, ".format(timestamp))
+                f.write(" Amostra numero: {}, ".format(n + 1))
+                f.write(" Timestamp: {}, ".format(timestamp))
                 f.write(" Localizacao Global: %s, " % vehicle.location.global_frame)
                 f.write(" Rangefinder distance: %s, " % vehicle.rangefinder.distance)
                 f.write(" Orientacao Local: %s, " % vehicle.location.local_frame)  # NED
-                f.write(" Altitude (global relative frame): %s\n" % vehicle.location.global_relative_frame.alt)
+                f.write(" Altitude (relativa): %s\n" % vehicle.location.global_relative_frame.alt)
+                alt.append(vehicle.location.global_relative_frame.alt)
+                lat.append(vehicle.location.global_frame.lat)
+                lon.append(vehicle.location.global_frame.lon)
             f.close()
         f.closed
+    return (lat,lon,alt)
 
     """
     # vehicle is an instance of the Vehicle class
