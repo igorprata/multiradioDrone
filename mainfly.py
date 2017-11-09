@@ -4,6 +4,7 @@ import time
 
 from navegacao import simplegoto, takeoff
 from navio2 import conecta, uavstate
+from tools import multilateration
 
 ##################### Codigo para Voo controlado #############################
 parser = argparse.ArgumentParser(description='Comanda o drone em uma rota de voo estabelecida e executa o sensoriamento.')
@@ -58,10 +59,26 @@ takeoff.armandtakeoff(8, veiculo)
 # espera alguns segundos para verificar a estabilidade
 time.sleep(10)
 
-# Dispara a Funcao de navegacao ponto a ponto e recebe array de distancias
+# Dispara a Funcao de navegacao ponto a ponto e recebe um array de distancias (WF e BT) e lat, lon, alt para cada ponto de coleta:
 results = simplegoto.pontoaponto(veiculo, repeticao, WFinterface, WFaddr, BTaddr, output)
 
-print results
+# Faz o parse dos resultados em variáveis especificas por atributo em cada ponto
+dist_wf = results[0]
+dist_bt = results[1]
+latlon = []
+alt = []
+
+for x in results[2]:
+    latlon.append(x[0])
+    alt.append(x[1])
+
+# Amostras do Fabio Costa
+#latlon = [(-22.86985120,-43.1051227),(-22.86983310,-43.1051285),(-22.86984080,-43.1051355),(-22.86983130,-43.1051311),(-22.86984440,-43.1051408),(-22.86987940,-43.1051325),(-22.86986800,-43.1051353),(-22.86986740,-43.1051099),(-22.86982530,-43.1051313),(-22.86986990,-43.1051268),(-22.86987800,-43.1051076),(-22.86984740,-43.1051061),(-22.86984480,-43.1051351),(-22.86984460,-43.1051185),(-22.86986010,-43.1051341),(-22.86987300,-43.1051315),(-22.86985720,-43.1051022),(-22.86986560,-43.1051251),(-22.86986950,-43.1051279),(-22.86987230,-43.1051344),(-22.86984940,-43.1051007),(-22.86984500,-43.1051201),(-22.86992110,-43.1050613),(-22.86984650,-43.1050980),(-22.86997450,-43.1050409),(-22.86984980,-43.1050972),(-22.86989680,-43.1050272),(-22.86984260,-43.1050673),(-22.86982940,-43.1050112),(-22.86996080,-43.1050254)]
+#dist_wf = (0.000251189,0.000271227,0.000292864,0.000316228,0.000316228,0.000398107,0.000398107,0.000398107,0.000398107,0.000429866,0.000429866,0.000464159,0.000464159,0.000501187,0.000681292,0.000735642,0.000926119,0.001000000,0.001079775,0.001165914,0.001165914,0.001847850,0.001847850,0.002712273,0.002712273,0.002928645,0.002928645,0.003162278,0.003981072,0.005843414)
+
+# Dispara método de multilateração final com todos os resultados finais e distâncias WIFI
+multilateration.multilateration(latlon,dist_wf)
+
 
 # Fecha o objeto veiculo antes de termianr o script
 print("Desconectando do Veículo")

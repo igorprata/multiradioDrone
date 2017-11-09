@@ -1,26 +1,28 @@
 # -*- coding: utf-8 -*-
 import picamera
+
 from time import sleep
 
-def cameraGimbal (vehicle, mode):
+def camera_gimbal (vehicle, mode, wayPointNum):
     camera = picamera.PiCamera()
-    if not mode:
-        mode = "photo"
     print "Gimbal status: %s" % vehicle.gimbal
+    if not mode:
+        mode = "ground"
 
-    # Point the gimbal straight down
-    if mode == "photo":
+    # Tira foto do chão
+    if mode == "ground":
         vehicle.gimbal.rotate(-90, 0, 0)
-
-        camera.capture('imageGround{counter:03d}.jpg')
+        camera.capture('imageGround%03i.jpg' % wayPointNum)
         sleep(10)
 
+    # Tira foto do ponto de decolagem
+    if mode == "home":
         # Set the camera to track the current home position.
         vehicle.gimbal.target_location(vehicle.home_location)
-        camera.capture('imageHome.jpg')
+        camera.capture('imageHome%03i.jpg' % wayPointNum)
         sleep(10)
 
-# Rotacao
+# Rotacao da imagem
 #    camera.hflip = True
 #    camera.vflip = True
 

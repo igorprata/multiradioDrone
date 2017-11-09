@@ -3,8 +3,13 @@ import time
 
 from dronekit import VehicleMode, LocationGlobalRelative
 from tools import sensores
+# from tools import sensores, camera                      # para habilitar o suporte a cameras
 from tools.IEEE80211 import IEEE80211Dist
 from tools.bluetooth import BTDist
+
+
+########################### Simples biblioteca que realiza navegação a pontos LAT, LON, ALT preestabelecidos no array COORDENADAS e dispara coletas em cada ponto ###########################
+
 
 def pontoaponto(aparelho, repeticao, WFinterface, WFaddr, BTaddr, output):
     print("Definindo como padrão a velocidade aérea de 3 metros por segundo")
@@ -15,7 +20,7 @@ def pontoaponto(aparelho, repeticao, WFinterface, WFaddr, BTaddr, output):
     dist_wf = []
     dist_bt = []
     uavlocal = []
-    count = 0
+    wayPointNum = 0
 
     # Voa até o ponto X
     for coordenada in coordenadas:
@@ -23,11 +28,13 @@ def pontoaponto(aparelho, repeticao, WFinterface, WFaddr, BTaddr, output):
         time.sleep(repeticao)
         dist_wf.append(IEEE80211Dist.wifi_dist(WFinterface, WFaddr, repeticao))
         dist_bt.append(BTDist.bt_dist_paired(BTaddr,repeticao))
+#        camera.camera_gimbal(aparelho, "ground", wayPointNum) # Tira uma foto do solo
+#        camera.camera_gimbal(aparelho, "home", wayPointNum) # Tira uma foto do alvo
         time.sleep(repeticao)
-        print "Distância WIFI do alvo ao ponto {}: {}cm".format(count, dist_wf[count])
-        print "Distância Bluetooth do alvo ao ponto {}: {}cm".format(count, dist_bt[count])
-        count += 1
-        print "Voando até o ponto {}".format(count)
+        print "Distância WIFI do alvo ao ponto {}: {}cm".format(wayPointNum, dist_wf[wayPointNum])
+        print "Distância Bluetooth do alvo ao ponto {}: {}cm".format(wayPointNum, dist_bt[wayPointNum])
+        wayPointNum += 1
+        print "Voando até o ponto {}".format(wayPointNum)
         point = LocationGlobalRelative(coordenada[0],coordenada[1],coordenada[2])
         aparelho.simple_goto(point)
         time.sleep(10)
@@ -38,10 +45,12 @@ def pontoaponto(aparelho, repeticao, WFinterface, WFaddr, BTaddr, output):
     time.sleep(repeticao)
     dist_wf.append(IEEE80211Dist.wifi_dist(WFinterface, WFaddr, repeticao))
     dist_bt.append(BTDist.bt_dist_paired(BTaddr, repeticao))
+#    camera.camera_gimbal(aparelho, "ground", wayPointNum)  # Tira uma foto do solo
+#    camera.camera_gimbal(aparelho, "home", wayPointNum)  # Tira uma foto do alvo
     time.sleep(repeticao)
-    print "Distância WIFI do alvo ao ponto {}: {}cm".format(count, dist_wf[count])
-    print "Distância Bluetooth do alvo ao ponto {}: {}cm".format(count, dist_bt[count])
-    count += 1
+    print "Distância WIFI do alvo ao ponto {}: {}cm".format(wayPointNum, dist_wf[wayPointNum])
+    print "Distância Bluetooth do alvo ao ponto {}: {}cm".format(wayPointNum, dist_bt[wayPointNum])
+    wayPointNum += 1
     print "Retornando ao ponto de Decolagem"
     aparelho.mode = VehicleMode("RTL")
     

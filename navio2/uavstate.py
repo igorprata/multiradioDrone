@@ -41,8 +41,7 @@ def uavstatus (vehicle, output):
 
 def uavsensors (vehicle, repeticao, output):
 
-    lat = []
-    lon = []
+    latlon = []
     alt = []
 
     if output == "screen":
@@ -66,11 +65,11 @@ def uavsensors (vehicle, repeticao, output):
                 f.write(" Orientacao Local: %s, " % vehicle.location.local_frame)  # NED
                 f.write(" Altitude (relativa): %s\n" % vehicle.location.global_relative_frame.alt)
                 alt.append(vehicle.location.global_relative_frame.alt)
-                lat.append(vehicle.location.global_frame.lat)
-                lon.append(vehicle.location.global_frame.lon)
+                latlon.append(vehicle.location.global_frame.lat)
+                latlon.append(vehicle.location.global_frame.lon)
             f.close()
         f.closed
-    return (lat,lon,alt)
+    return (latlon,alt)
 
     """
     # vehicle is an instance of the Vehicle class
