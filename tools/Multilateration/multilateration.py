@@ -25,7 +25,7 @@ class multilateration(object):
 		min_distance = float('inf')
 		closest_location = None
 
-		# Faz um sort na matriz de distância pelo ponto de coleta mais próximo ao alvo
+		# Faz uma busca na matriz de distância pelo ponto de coleta mais próximo ao alvo
 		for n in range(len(distances)):
 			if distances[n] < min_distance:
 				min_distance = distances[n]

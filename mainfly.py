@@ -4,7 +4,7 @@ import time
 
 from navegacao import simplegoto, takeoff
 from navio2 import conecta, uavstate
-from tools import multilateration
+from tools.Multilateration import multilateration
 
 ##################### Codigo para Voo controlado #############################
 parser = argparse.ArgumentParser(description='Comanda o drone em uma rota de voo estabelecida e executa o sensoriamento.')
@@ -77,7 +77,7 @@ for x in results[2]:
 #dist_wf = (0.000251189,0.000271227,0.000292864,0.000316228,0.000316228,0.000398107,0.000398107,0.000398107,0.000398107,0.000429866,0.000429866,0.000464159,0.000464159,0.000501187,0.000681292,0.000735642,0.000926119,0.001000000,0.001079775,0.001165914,0.001165914,0.001847850,0.001847850,0.002712273,0.002712273,0.002928645,0.002928645,0.003162278,0.003981072,0.005843414)
 
 # Dispara método de multilateração final com todos os resultados finais e distâncias WIFI
-multilateration.multilateration(latlon,dist_wf)
+multilateration.multilateration(latlon, dist_wf)
 
 
 # Fecha o objeto veiculo antes de termianr o script

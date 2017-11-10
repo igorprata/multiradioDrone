@@ -12,25 +12,23 @@ from mpl_toolkits.basemap import Basemap
 # https://matplotlib.org/basemap/users/examples.html
 # https://peak5390.wordpress.com/2012/12/08/matplotlib-basemap-tutorial-plotting-points-on-a-simple-map/
 # https://stackoverflow.com/questions/44488167/plotting-lat-long-points-using-basemap
+# # http://www.geophysique.be/2011/02/20/matplotlib-basemap-tutorial-09-drawing-circles/
+
 
 u = [(-22.86985120,-43.1051227),(-22.86983310,-43.1051285),(-22.86984080,-43.1051355),(-22.86983130,-43.1051311),(-22.86984440,-43.1051408),(-22.86987940,-43.1051325),(-22.86986800,-43.1051353),(-22.86986740,-43.1051099),(-22.86982530,-43.1051313),(-22.86986990,-43.1051268),(-22.86987800,-43.1051076),(-22.86984740,-43.1051061),(-22.86984480,-43.1051351),(-22.86984460,-43.1051185),(-22.86986010,-43.1051341),(-22.86987300,-43.1051315),(-22.86985720,-43.1051022),(-22.86986560,-43.1051251),(-22.86986950,-43.1051279),(-22.86987230,-43.1051344),(-22.86984940,-43.1051007),(-22.86984500,-43.1051201),(-22.86992110,-43.1050613),(-22.86984650,-43.1050980),(-22.86997450,-43.1050409),(-22.86984980,-43.1050972),(-22.86989680,-43.1050272),(-22.86984260,-43.1050673),(-22.86982940,-43.1050112),(-22.86996080,-43.1050254)]
 dist_wf = (0.000251189,0.000271227,0.000292864,0.000316228,0.000316228,0.000398107,0.000398107,0.000398107,0.000398107,0.000429866,0.000429866,0.000464159,0.000464159,0.000501187,0.000681292,0.000735642,0.000926119,0.001000000,0.001079775,0.001165914,0.001165914,0.001847850,0.001847850,0.002712273,0.002712273,0.002928645,0.002928645,0.003162278,0.003981072,0.005843414)
 lat = []
 lon = []
-results = [-22.86986225, -43.10511356]
-lat2 = []
-lon2 = []
+results = [-22.86986225, -43.10511356] # By MSE
+results2 = [-22.8698640799,-43.1051066236] # By LSE
+real = [-22.86986000,-43.1051200]
 
 for p in u:
     lat.append(p[0])
     lon.append(p[1])
 
-for p in results:
-    lat2.append(results[0])
-    lon2.append(results[1])
-
 # determine range to print based on min, max lat and lon of the data
-margin = 0.01 # buffer to add to the range
+margin = 1 # buffer to add to the range
 lat_min = min(lat) - margin
 lat_max = max(lat) + margin
 lon_min = min(lon) - margin
@@ -55,9 +53,16 @@ m.fillcontinents(color = 'gray',lake_color='#46bcec')
 # convert lat and lon to map projection coordinates
 lons, lats = m(lon, lat)
 # plot points as red dots
-m.scatter(lons, lats, marker = 'o', color='r', zorder=5)
-lons2, lats2 = m(lon2, lat2)
+m.scatter(lons, lats, marker = 'o', color='black', zorder=5)
+
+lons2, lats2 = m(results[1], results[0])
 m.plot(lons2, lats2, marker = 'o', color='orange', zorder=5)
+
+lons3, lats3 = m(results2[1], results2[0])
+m.plot(lons3, lats3, marker = 'o', color='purple', zorder=5)
+
+lons4, lats4 = m(real[1], real[0])
+m.plot(lons4, lats4, marker = 'o', color='white', zorder=5)
 
 def shoot(lon, lat, azimuth, maxdist=None):
     """Shooter Function
