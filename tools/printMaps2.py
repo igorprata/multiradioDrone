@@ -28,12 +28,14 @@ gmap = gmplot.GoogleMapPlotter(latitude[0],longitude[0],20)
 # /usr/local/lib/python3.5/dist-packages/gmplot/markers/
 
 #gmap.scatter(latitude, longitude, '#FF6666', size=4, marker=False)
-gmap.scatter(latitude, longitude, 'k', marker=True)
+#gmap.scatter(latitude, longitude, 'k', marker=True)
 #gmap.plot(latitude, longitude, 'cornflowerblue', edge_width=3)
 #gmap.heatmap(latitude, longitude, radius=100)
 
 for n in range(len(latitude)):
+    gmap.marker(latitude[n], longitude[n], '#FF0000', title='Ponto%03i'%n)
     gmap.circle(latitude[n], longitude[n], radius=dist_wf[n]*1000, color='#FF6666')
 
+
 # Write the map in an HTML file
-gmap.draw('map.html')
+gmap.draw('mapa.html')

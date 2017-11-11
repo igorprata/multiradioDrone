@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from mainfly import veiculo
+from mainFly import veiculo
 
 def uav():
     drone = veiculo

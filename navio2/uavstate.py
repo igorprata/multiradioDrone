@@ -50,8 +50,8 @@ def uavsensors (vehicle, repeticao, output):
         print " Orientacao Local: %s" % vehicle.location.local_frame    #NED
         print " Altitude (relativa): %s" % vehicle.location.global_relative_frame.alt
         alt.append(vehicle.location.global_relative_frame.alt)
-        lat.append(vehicle.location.global_frame.lat)
-        lon.append(vehicle.location.global_frame.lon)
+        latlon.append(vehicle.location.global_frame.lat)
+        latlon.append(vehicle.location.global_frame.lon)
 
     if output == "file":
         with open('uavsensors.dump', "a") as f:
