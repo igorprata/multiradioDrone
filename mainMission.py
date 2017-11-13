@@ -105,26 +105,33 @@ print veiculo.commands.count
 
 wayPointNum = veiculo._current_waypoint - 1
 
-while wayPointNum<veiculo._current_waypoint:
-    print "Voando até o ponto: currentwaipoint {} ".format(veiculo._current_waypoint)
-    print "Voando até o ponto: commands next {} ".format(veiculo.commands.next)
-    print "Voando até o ponto: contador interno {} ".format(wayPointNum)
-    print " Estado do Sistema: %s" % veiculo.system_status.state
-    print " Modo de voo: %s" % veiculo.mode.name
-    print " Bateria: %s" % veiculo.battery
-    print " GPS: %s" % veiculo.gps_0
-    print " Global Location (relative altitude): %s" % veiculo.location.global_relative_frame
-    print '\033[1m' + " Ponto da missao: %s" % veiculo.commands.next
-    print '\033[0m'
-    uavlocal.append(sensores.sensors(veiculo, repeticao, WFinterface, BTaddr, output))
-    dist_wf.append(IEEE80211Dist.wifi_dist(WFinterface, WFaddr, repeticao))
-#    dist_bt.append(BTDist.bt_dist_paired(BTaddr, repeticao))
-#    camera.camera_gimbal(aparelho, "ground", wayPointNum) # Tira uma foto do solo
-#    camera.camera_gimbal(aparelho, "home", wayPointNum) # Tira uma foto do alvo
-    print "Distância WIFI do alvo ao ponto {}: {}cm".format(wayPointNum, dist_wf[wayPointNum])
-#    print "Distância Bluetooth do alvo ao ponto {}: {}cm".format(wayPointNum, dist_bt[wayPointNum])
-    wayPointNum += 1
-    time.sleep(1)
+if veiculo.mode == VehicleMode("AUTO"):
+    while veiculo._current_waypoint<veiculo.commands.count and veiculo._current_waypoint>wayPointNum:
+
+        print "Voando até o ponto: currentwaypoint {} ".format(veiculo._current_waypoint)
+        print "Voando até o ponto: commands next {} ".format(veiculo.commands.next)
+        print "Voando até o ponto: contador interno {} ".format(wayPointNum)
+        print " Estado do Sistema: %s" % veiculo.system_status.state
+        print " Modo de voo: %s" % veiculo.mode.name
+        print " Bateria: %s" % veiculo.battery
+        print " GPS: %s" % veiculo.gps_0
+        print " Global Location (relative altitude): %s" % veiculo.location.global_relative_frame
+        print '\033[1m' + " Ponto da missao: %s" % veiculo.commands.next
+        print '\033[0m'
+    #1    uavlocal.append(sensores.sensors(veiculo, repeticao, WFinterface, BTaddr, output))
+    #2    dist_wf.append(IEEE80211Dist.wifi_dist(WFinterface, WFaddr, repeticao))
+
+
+    #    dist_bt.append(BTDist.bt_dist_paired(BTaddr, repeticao))
+    #    camera.camera_gimbal(aparelho, "ground", wayPointNum) # Tira uma foto do solo
+    #    camera.camera_gimbal(aparelho, "home", wayPointNum) # Tira uma foto do alvo
+
+
+    #3    print "Distância WIFI do alvo ao ponto {}: {}cm".format(wayPointNum, dist_wf[wayPointNum])
+
+    #    print "Distância Bluetooth do alvo ao ponto {}: {}cm".format(wayPointNum, dist_bt[wayPointNum])
+        wayPointNum += 1
+        time.sleep(1)
 
 
 # Dispara método de multilateração final com todos os resultados finais e distâncias WIFI
