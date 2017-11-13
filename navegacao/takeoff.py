@@ -21,6 +21,7 @@ def armandtakeoff(aTargetAltitude,veiculo):
     # ArduCopter deve ficar no modo GUIDED
     veiculo.mode    = VehicleMode("GUIDED")
     veiculo.armed   = True
+
     # Confirma se o veiculo esta armado antes de tentar Decolar: EKF ready, and the vehicle has GPS lock
     while not veiculo.mode.name == 'GUIDED' and not veiculo.armed:
         print "Aguardando o acionamento dos motores..."

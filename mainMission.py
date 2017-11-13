@@ -9,7 +9,9 @@ from tools import sensores
 # from tools import sensores, camera                      # para habilitar o suporte a cameras
 from tools.IEEE80211 import IEEE80211Dist
 # from tools.bluetooth import BTDist
-from navegacao.missionManager import upload_mission
+from navegacao import missionManager, uavCommands
+from navegacao import takeoff
+from navio2 import uavstate
 
 
 ##################### Código para OBSERVAR o voo controlado externamente por uma missão #############################
@@ -40,7 +42,7 @@ BTaddr = args.BTaddr
 output = args.output
 mission_plan = args.mission_plan
 
-# Valores padroes se nao forem especificados
+# Define valores padroes se nao forem especificados
 if not connection_string:
     connection_string = "127.0.0.1:14550"
 if not repeticao:
@@ -49,6 +51,7 @@ if not WFinterface:
     WFinterface = "wlp3s0"
 if not WFaddr:
     WFaddr = 'C0:3F:0E:D0:D8:15' # igorlandia
+    # WFaddr = 'B8:5A:73:A4:E8:9E' # Galaxy Duos
 if not BTaddr:
 #    BTaddr = '00:02:72:D5:6E:5D' # rc-control???B8:5A:73:A4:E8:9D
     BTaddr = 'B8:5A:73:A4:E8:9D'  # Galaxy Duos
@@ -58,7 +61,7 @@ if not mission_plan:
     mission_file = "mission.txt"
 
 
-# Executa a conexao an aeronave e recebe a classe vehicle devolta
+# Executa a conexão com a aeronave e recebe a classe vehicle devolta
 veiculo = conecta.conexao(connection_string)
 
 # Listagem dos parametros de status do veiculo e modo de voo
@@ -67,17 +70,45 @@ uavstate.uavversion(veiculo)
 # Espera alguns segundos para verificar a estabilidade
 time.sleep(10)
 
-# Carrega uma missão de voo:
-upload_mission(mission_file, veiculo)
+######### !!!!! Área de controle opicional da aeronave (útil para iniciar os testes em ambientes simulados)!!!!! #########
 
+# Carrega uma missão de voo:
+missionManager.upload_mission(mission_file, veiculo)
+
+# Dispara a Funcao de Decolagem
+takeoff.armandtakeoff(8, veiculo)
+
+# Faz o vaículo entrar no modo automático e iniciar a missão
 veiculo.mode = VehicleMode("AUTO")
+
+##########################################################################################################################
+
+
+# listagem dos parametros de status do veiculo e modo de voo
+
+veiculo.wait_ready('autopilot_version')
+print "Altitude relative to home_location: %s" % veiculo.location.global_relative_frame.alt
+
+# Verifica parâmetros de Throttle
+uavstate.uav_throttle(veiculo)
+
+# Verifica se há posição de home no veículo
+uavCommands.check_for_home(veiculo)
+
+# Baixa a missão par aum array
+missionlist = missionManager.download_mission(veiculo)
 
 uavlocal = []
 dist_wf = []
-wayPointNum = 0
 
-while veiculo.commands.next<14:
-    print "Voando até o ponto"
+print veiculo.commands.count
+
+wayPointNum = veiculo._current_waypoint - 1
+
+while wayPointNum<veiculo._current_waypoint:
+    print "Voando até o ponto: currentwaipoint {} ".format(veiculo._current_waypoint)
+    print "Voando até o ponto: commands next {} ".format(veiculo.commands.next)
+    print "Voando até o ponto: contador interno {} ".format(wayPointNum)
     print " Estado do Sistema: %s" % veiculo.system_status.state
     print " Modo de voo: %s" % veiculo.mode.name
     print " Bateria: %s" % veiculo.battery
@@ -85,7 +116,6 @@ while veiculo.commands.next<14:
     print " Global Location (relative altitude): %s" % veiculo.location.global_relative_frame
     print '\033[1m' + " Ponto da missao: %s" % veiculo.commands.next
     print '\033[0m'
-
     uavlocal.append(sensores.sensors(veiculo, repeticao, WFinterface, BTaddr, output))
     dist_wf.append(IEEE80211Dist.wifi_dist(WFinterface, WFaddr, repeticao))
 #    dist_bt.append(BTDist.bt_dist_paired(BTaddr, repeticao))
@@ -94,7 +124,7 @@ while veiculo.commands.next<14:
     print "Distância WIFI do alvo ao ponto {}: {}cm".format(wayPointNum, dist_wf[wayPointNum])
 #    print "Distância Bluetooth do alvo ao ponto {}: {}cm".format(wayPointNum, dist_bt[wayPointNum])
     wayPointNum += 1
-    time.sleep(10)
+    time.sleep(1)
 
 
 # Dispara método de multilateração final com todos os resultados finais e distâncias WIFI

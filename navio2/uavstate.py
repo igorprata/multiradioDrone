@@ -2,6 +2,7 @@
 import time
 
 def uavversion (vehicle):
+    vehicle.wait_ready('autopilot_version')
     print " Autopilot Firmware version: %s" % vehicle.version
     print " Estado do Sistema: %s" % vehicle.system_status.state
     print " EKF OK?: %s" % vehicle.ekf_ok
@@ -70,6 +71,16 @@ def uavsensors (vehicle, repeticao, output):
             f.close()
         f.closed
     return (latlon,alt)
+
+def uav_throttle (vehicle):
+    # Print the value of the THR_MIN parameter.
+    # Changes from 3.4.0-rc1
+    # THR_MIN becomes MOT_SPIN_MIN
+    # THR_MID becomes MOT_THST_HOVER
+
+    print "\nParam MOT_SPIN_MIN: %s" % vehicle.parameters['MOT_SPIN_MIN']
+    print "Param MOT_THST_HOVER: %s" % vehicle.parameters['MOT_THST_HOVER']
+    print "Param MOT_HOVER_LEARN: %s" % vehicle.parameters['MOT_HOVER_LEARN']
 
     """
     # vehicle is an instance of the Vehicle class
