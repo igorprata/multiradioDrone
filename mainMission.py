@@ -50,8 +50,8 @@ if not repeticao:
 if not WFinterface:
     WFinterface = "wlp3s0"
 if not WFaddr:
-    WFaddr = 'C0:3F:0E:D0:D8:15' # igorlandia
-    # WFaddr = 'B8:5A:73:A4:E8:9E' # Galaxy Duos
+    # WFaddr = 'C0:3F:0E:D0:D8:15' # igorlandia
+    WFaddr = 'B8:5A:73:A4:E8:9E' # Galaxy Duos
 if not BTaddr:
 #    BTaddr = '00:02:72:D5:6E:5D' # rc-control???B8:5A:73:A4:E8:9D
     BTaddr = 'B8:5A:73:A4:E8:9D'  # Galaxy Duos
@@ -77,10 +77,10 @@ missionManager.upload_mission(mission_file, veiculo)
 
 # Dispara a Funcao de Decolagem
 takeoff.armandtakeoff(8, veiculo)
-
+time.sleep(5)
 # Faz o vaículo entrar no modo automático e iniciar a missão
 veiculo.mode = VehicleMode("AUTO")
-
+time.sleep(5)
 ##########################################################################################################################
 
 
@@ -100,13 +100,9 @@ missionlist = missionManager.download_mission(veiculo)
 
 uavlocal = []
 dist_wf = []
+wayPointNum = 0
 
-print veiculo.commands.count
-
-wayPointNum = veiculo._current_waypoint - 1
-
-if veiculo.mode == VehicleMode("AUTO"):
-    while veiculo._current_waypoint<veiculo.commands.count and veiculo._current_waypoint>wayPointNum:
+def actions(wayPointNum):
 
         print "Voando até o ponto: currentwaypoint {} ".format(veiculo._current_waypoint)
         print "Voando até o ponto: commands next {} ".format(veiculo.commands.next)
@@ -130,8 +126,25 @@ if veiculo.mode == VehicleMode("AUTO"):
     #3    print "Distância WIFI do alvo ao ponto {}: {}cm".format(wayPointNum, dist_wf[wayPointNum])
 
     #    print "Distância Bluetooth do alvo ao ponto {}: {}cm".format(wayPointNum, dist_bt[wayPointNum])
-        wayPointNum += 1
+        wayPointNum = veiculo._current_waypoint
         time.sleep(1)
+        return wayPointNum
+
+
+pointMiss = 0
+print veiculo.commands.count
+
+while veiculo.mode == VehicleMode("AUTO"):
+    if veiculo._current_waypoint in (3 ,5, 7, 9, 11, 13) and veiculo._current_waypoint>wayPointNum:
+        wayPointNum = actions(veiculo._current_waypoint)
+        print "Executada coleta no ponto wayPointNum {}".format(wayPointNum)
+    if veiculo._current_waypoint == 15:
+        break
+    else:
+        print "Coleta não executada. Ainda não chegou no ponto certo!"
+        pointMiss +=1
+        time.sleep(5)
+
 
 
 # Dispara método de multilateração final com todos os resultados finais e distâncias WIFI
@@ -150,7 +163,7 @@ if veiculo.mode == VehicleMode("AUTO"):
 
 #multilateration.multilateration(latlon, dist_wf)
 
-
+print "Quantidade de coletas não disparadas: {}".format(pointMiss)
 # Fecha o objeto veiculo antes de termianr o script
 print("Desconectando do Veículo")
 veiculo.close()

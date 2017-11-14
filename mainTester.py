@@ -46,7 +46,8 @@ if not repeticao:
 if not WFinterface:
     WFinterface = "wlp3s0"
 if not WFaddr:
-    WFaddr = 'C0:3F:0E:D0:D8:15' # igorlandia
+#    WFaddr = 'C0:3F:0E:D0:D8:15' # igorlandia
+    WFaddr = 'B8:5A:73:A4:E8:9E' # Galaxy Duos
 if not BTaddr:
 #    BTaddr = '00:02:72:D5:6E:5D' # rc-control???B8:5A:73:A4:E8:9D
     BTaddr = 'B8:5A:73:A4:E8:9D'  # Galaxy Duos
