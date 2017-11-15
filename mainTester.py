@@ -8,7 +8,7 @@ from navio2 import conecta, uavstate
 from tools import sensores
 # from tools import sensores, camera                      # para habilitar o suporte a cameras
 from tools.IEEE80211 import IEEE80211Dist
-# from tools.bluetooth import BTDist, BTscanpaired
+from tools.bluetooth import BTDist, BTscanpaired
 from navio2 import uavstate
 from tools.IEEE80211 import IEEE80211scan
 
@@ -58,32 +58,50 @@ if not output:
 veiculo = conecta.conexao(connection_string)
 
 # Listagem dos parametros de status do veiculo e modo de voo
-uavstate.uavversion(veiculo)
 print " GPS: %s" % veiculo.gps_0
 print " Global Location (relative altitude): %s" % veiculo.location.global_relative_frame
+uavstate.uavversion(veiculo)
 
 # Grava os sensores em arquivo
+with open('uavsensors.dump', "a") as f:
+    f.write("Posição: {}\n".format(veiculo.location.global_relative_frame))
+    f.write("Coleta realizada no Tempo: {}\n".format(time.ctime()))
+    f.close()
 uavlocal = uavstate.uavsensors(veiculo, repeticao, output)
-dist_wf_avg = (IEEE80211Dist.wifi_dist(WFinterface, WFaddr, repeticao))
-# Registra o inicio do arquivo para não perder a referencia do ponto de coleta de WIFI e executa o rastreamento ambiental de sinais WIFI
+
+# Registra o inicio do arquivo para não perder a referencia do ponto de coleta de WIFI, executa o rastreamento ambiental de sinais WIFI e estimativa de distância de WIFI
 with open('wifiscan.dump', "a") as f:
     f.write("Posição: {}\n".format(veiculo.location.global_relative_frame))
+    f.write("Coleta realizada no Tempo: {}\n".format(time.ctime()))
     f.close()
 IEEE80211scan.scan_wifi(repeticao, WFinterface, output)
 
-# Habilitar somente com o Bluetooth funcionando:
-#   dist_bt+avg = (BTDist.bt_dist_paired(BTaddr, repeticao))
-#    print "Distância Bluetooth do alvo é: {}cm".format(dist_bt[wayPointNum])
+dist_wf_avg = (IEEE80211Dist.wifi_dist(WFinterface, WFaddr, repeticao))
+with open('wifidist.dump', "a") as f:
+    f.write("Posição: {}\n".format(veiculo.location.global_relative_frame))
+    f.write("Coleta realizada no Tempo: {}\n".format(time.ctime()))
+    f.write("Distância WIFI do alvo é: {}cm".format(dist_wf_avg))
+    f.close()
+
+# Registra o inicio do arquivo para não perder a referencia do ponto de estimativa de distância de Bluetooth e executa o rastreamento ambiental de dispositivos pariados
+with open('btscan.dump', "a") as f:
+    f.write("Posição: {}\n".format(veiculo.location.global_relative_frame))
+    f.write("Coleta realizada no Tempo: {}\n".format(time.ctime()))
+    f.close()
+BTscanpaired.scan_bluetooth(repeticao, BTaddr, output)
+
+dist_bt_avg = BTDist.bt_dist_paired(BTaddr, repeticao)
+with open('btdist.dump', "a") as f:
+    f.write("Posição: {}\n".format(veiculo.location.global_relative_frame))
+    f.write("Coleta realizada no Tempo: {}\n".format(time.ctime()))
+    f.write("Distância Bluetooth do alvo é: {}cm".format(dist_bt_avg))
+    f.close()
 
 print "A posição do sensor é: {}".format(veiculo.location.global_relative_frame)
 print "Distância WIFI do alvo é: {}cm".format(dist_wf_avg)
 
-# Salva as Coordenadas coletadas
-with open('uavposition.dump', "a") as f:
-    f.write("Coleta realizada no Tempo: {}\n".format(int(time.time())))
-    f.write(str(uavlocal))
-    f.close()
 time.sleep(10)
-# Fecha o objeto veiculo antes de termianr o script
+
+# Fecha o objeto veiculo antes de terminar o script
 print("Desconectando do Veículo")
 veiculo.close()

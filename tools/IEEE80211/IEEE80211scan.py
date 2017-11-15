@@ -7,7 +7,7 @@ def scan_wifi(repeticao, WFinterface, output):
         print "Exibicao dos resultados WIFI da interface {} somente em tela".format(WFinterface)
         for n in range(repeticao):
             for cell in Cell.all(WFinterface):
-                timestamp = int(time.time())
+                timestamp = time.time()
                 print "Amostra numero: {}".format(n+1)
                 print("Timestamp: {}, MAC: {}, Frequencia: {}, Sinal {}, Canal: {}, Nome: {}, Qualidade: {}".format(timestamp, cell.address, cell.frequency, cell.signal, cell.channel, cell.ssid, cell.quality))
             time.sleep(1)
@@ -17,7 +17,7 @@ def scan_wifi(repeticao, WFinterface, output):
             print "Exibicao dos resultados WIFI de interface {} somente no arquivo: {}".format(WFinterface,f.name)
             for n in range(repeticao):
                 for cell in Cell.all(WFinterface):
-                    timestamp = int(time.time())
+                    timestamp = time.time()
                     f.write("Amostra numero: {}, ".format(n+1))
                     f.write("Timestamp: {}, MAC: {}, Frequencia: {}, Sinal {}, Canal: {}, Nome: {}, Qualidade: {}\n".format(
                         timestamp, cell.address, cell.frequency, cell.signal, cell.channel, cell.ssid, cell.quality))

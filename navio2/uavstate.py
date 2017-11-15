@@ -26,7 +26,7 @@ def uavstatus (vehicle, output):
     if output == "file":
         with open('uavstatus.dump', "a") as f:
             print "Exibicao das informacoes do VANT somente em arquivo: {}".format(f.name)
-            timestamp = int(time.time())
+            timestamp = time.time()
             f.write("Timestamp: {}, ".format(timestamp))
             f.write("Estado do Sistema: %s, " % vehicle.system_status.state)
             f.write("Modo de voo: %s, " % vehicle.mode.name)
@@ -58,7 +58,7 @@ def uavsensors (vehicle, repeticao, output):
         with open('uavsensors.dump', "a") as f:
             print "Exibicao dos sensores do VANT somente em arquivo: {}".format(f.name)
             for n in range(repeticao):
-                timestamp = int(time.time())
+                timestamp = time.time()
                 f.write(" Amostra numero: {}, ".format(n + 1))
                 f.write(" Timestamp: {}, ".format(timestamp))
                 f.write(" Localizacao Global: %s, " % vehicle.location.global_frame)

@@ -11,9 +11,5 @@ def sensors(vehicle, repeticao, WFinterface, BTaddr, output):
     uavstate.uavstatus(vehicle, output)
     uavlocal = uavstate.uavsensors(vehicle, repeticao, output)
     IEEE80211scan.scan_wifi(repeticao, WFinterface, output)
-#    BTscanpaired.scan_bluetooth(repeticao, BTaddr, output)
+    BTscanpaired.scan_bluetooth(repeticao, BTaddr, output)
     return uavlocal
-
-
-#   print '\033[1m' + "PARA DEIXAR EM NEGRITO"
-#   print '\033[0m'

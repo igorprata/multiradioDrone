@@ -8,7 +8,7 @@ from dronekit import VehicleMode, LocationGlobalRelative
 from tools import sensores
 # from tools import sensores, camera                      # para habilitar o suporte a cameras
 from tools.IEEE80211 import IEEE80211Dist
-# from tools.bluetooth import BTDist
+from tools.bluetooth import BTDist
 from navegacao import missionManager, uavCommands
 from navegacao import takeoff
 from navio2 import uavstate
@@ -73,14 +73,14 @@ time.sleep(10)
 ######### !!!!! Área de controle opicional da aeronave (útil para iniciar os testes em ambientes simulados)!!!!! #########
 
 # Carrega uma missão de voo:
-missionManager.upload_mission(mission_file, veiculo)
+#missionManager.upload_mission(mission_file, veiculo)
 
 # Dispara a Funcao de Decolagem
-takeoff.armandtakeoff(8, veiculo)
-time.sleep(5)
+#takeoff.armandtakeoff(8, veiculo)
+#time.sleep(5)
 # Faz o vaículo entrar no modo automático e iniciar a missão
-veiculo.mode = VehicleMode("AUTO")
-time.sleep(5)
+#veiculo.mode = VehicleMode("AUTO")
+#time.sleep(5)
 ##########################################################################################################################
 
 
@@ -88,6 +88,13 @@ time.sleep(5)
 
 veiculo.wait_ready('autopilot_version')
 print "Altitude relative to home_location: %s" % veiculo.location.global_relative_frame.alt
+print " Modo de voo: %s" % veiculo.mode.name
+
+if veiculo.mode.name != "AUTO":
+    print "não está em AUTO, aguardando"
+    time.sleep(30)
+else:
+    print "O veículo está em AUTO, prosseguindo"
 
 # Verifica parâmetros de Throttle
 uavstate.uav_throttle(veiculo)
@@ -100,51 +107,74 @@ missionlist = missionManager.download_mission(veiculo)
 
 uavlocal = []
 dist_wf = []
+dist_bt = []
 wayPointNum = 0
+pointMiss = 0
 
 def actions(wayPointNum):
-
+        print "Coleta realizada no Tempo: {}\n".format(time.ctime())
         print "Voando até o ponto: currentwaypoint {} ".format(veiculo._current_waypoint)
         print "Voando até o ponto: commands next {} ".format(veiculo.commands.next)
         print "Voando até o ponto: contador interno {} ".format(wayPointNum)
         print " Estado do Sistema: %s" % veiculo.system_status.state
-        print " Modo de voo: %s" % veiculo.mode.name
         print " Bateria: %s" % veiculo.battery
         print " GPS: %s" % veiculo.gps_0
         print " Global Location (relative altitude): %s" % veiculo.location.global_relative_frame
         print '\033[1m' + " Ponto da missao: %s" % veiculo.commands.next
         print '\033[0m'
-    #1    uavlocal.append(sensores.sensors(veiculo, repeticao, WFinterface, BTaddr, output))
-    #2    dist_wf.append(IEEE80211Dist.wifi_dist(WFinterface, WFaddr, repeticao))
 
+        with open('uavsensors.dump', "a") as f:
+            f.write("Posição: {}\n".format(veiculo.location.global_relative_frame))
+            f.write("Coleta realizada no Tempo: {}\n".format(time.ctime()))
+            f.close()
+        with open('wifiscan.dump', "a") as f:
+            f.write("Posição: {}\n".format(veiculo.location.global_relative_frame))
+            f.write("Coleta realizada no Tempo: {}\n".format(time.ctime()))
+            f.close()
+        with open('btscan.dump', "a") as f:
+            f.write("Posição: {}\n".format(veiculo.location.global_relative_frame))
+            f.write("Coleta realizada no Tempo: {}\n".format(time.ctime()))
+            f.close()
+        uavlocal.append(sensores.sensors(veiculo, repeticao, WFinterface, BTaddr, output))
 
-    #    dist_bt.append(BTDist.bt_dist_paired(BTaddr, repeticao))
+        dist_wf_avg = (IEEE80211Dist.wifi_dist(WFinterface, WFaddr, repeticao))
+        print "Distância WIFI do alvo ao ponto {}: {}cm".format(wayPointNum, dist_wf_avg)
+        with open('wifidist.dump', "a") as f:
+            f.write("Posição: {}\n".format(veiculo.location.global_relative_frame))
+            f.write("Coleta realizada no Tempo: {}\n".format(time.ctime()))
+            f.write("Distância WIFI do alvo é: {}cm".format(dist_wf_avg))
+            f.close()
+
+        dist_bt_avg = (BTDist.bt_dist_paired(BTaddr, repeticao))
+        print "Distância Bluetooth do alvo ao ponto {}: {}cm".format(wayPointNum, dist_bt_avg)
+        with open('btdist.dump', "a") as f:
+            f.write("Posição: {}\n".format(veiculo.location.global_relative_frame))
+            f.write("Coleta realizada no Tempo: {}\n".format(time.ctime()))
+            f.write("Distância Bluetooth do alvo é: {}cm".format(dist_bt_avg))
+            f.close()
+
     #    camera.camera_gimbal(aparelho, "ground", wayPointNum) # Tira uma foto do solo
     #    camera.camera_gimbal(aparelho, "home", wayPointNum) # Tira uma foto do alvo
 
 
-    #3    print "Distância WIFI do alvo ao ponto {}: {}cm".format(wayPointNum, dist_wf[wayPointNum])
-
-    #    print "Distância Bluetooth do alvo ao ponto {}: {}cm".format(wayPointNum, dist_bt[wayPointNum])
         wayPointNum = veiculo._current_waypoint
         time.sleep(1)
         return wayPointNum
 
 
-pointMiss = 0
-print veiculo.commands.count
+print "O número de pontos programados para essa missão de voo é: {}".format(veiculo.commands.count)
 
 while veiculo.mode == VehicleMode("AUTO"):
     if veiculo._current_waypoint in (3 ,5, 7, 9, 11, 13) and veiculo._current_waypoint>wayPointNum:
         wayPointNum = actions(veiculo._current_waypoint)
         print "Executada coleta no ponto wayPointNum {}".format(wayPointNum)
     if veiculo._current_waypoint == 15:
+        print "Alcançou o último ponto da missão"
         break
     else:
         print "Coleta não executada. Ainda não chegou no ponto certo!"
         pointMiss +=1
-        time.sleep(5)
-
+        time.sleep(2)
 
 
 # Dispara método de multilateração final com todos os resultados finais e distâncias WIFI

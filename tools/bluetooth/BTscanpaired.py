@@ -51,7 +51,7 @@ def scan_bluetooth(repeticao, BTaddr, output):
         for n in range(repeticao):
             # get rssi reading for address
             rssi = bluetooth_rssi(BTaddr)
-            print "Amostra numero: {}, Timestamp: {}, Endereco: {}, RSSI: {}".format(n + 1, int(time.time()), BTaddr, rssi)
+            print "Amostra numero: {}, Timestamp: {}, Endereco: {}, RSSI: {}".format(n + 1, time.time(), BTaddr, rssi)
             time.sleep(1)
             bt_rssi.append(rssi)
         return bt_rssi
@@ -61,7 +61,7 @@ def scan_bluetooth(repeticao, BTaddr, output):
             print "Exibicao dos resultados Bluetooth para o endereco {} somente no arquivo: {}".format(BTaddr, f.name)
             for n in range(repeticao):
                 rssi = bluetooth_rssi(BTaddr)
-                f.write("Amostra numero: {}, Timestamp: {}, Endereco: {}, RSSI: {}\n".format(n + 1, int(time.time()), BTaddr, rssi))
+                f.write("Amostra numero: {}, Timestamp: {}, Endereco: {}, RSSI: {}\n".format(n + 1, time.time(), BTaddr, rssi))
                 time.sleep(1)
                 bt_rssi.append(rssi)
             f.close()
