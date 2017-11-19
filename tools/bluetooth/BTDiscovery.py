@@ -11,7 +11,7 @@ import bluetooth
 ########################### Ferramenta standalone que verifica o MAC Address e nome dos dispositivos Bluetooth ao redor ###########################
 
 
-print("performing inquiry...")
+print("Monitorando ambiente por dispositos Bluetooth pareáveis...")
 
 nearby_devices = bluetooth.discover_devices(duration=5, lookup_names=True, flush_cache=True)
 
