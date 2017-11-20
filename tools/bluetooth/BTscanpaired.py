@@ -8,6 +8,10 @@ import time
 
 from bt_proximity import BluetoothRSSI
 
+
+##################### Código para OBSERVAR dispositovps bluetooth pareados #############################
+
+
 def bluetooth_rssi(addr):
     # Open hci socket
     hci_sock = bt.hci_open_dev()

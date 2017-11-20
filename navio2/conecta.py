@@ -5,6 +5,11 @@ import time
 
 from dronekit import connect
 
+
+##################### Código para realizar conexão com o veículo pelo Dronekit #############################
+
+
+
 def conexao (connection_string):
     # abrir conexao com o veiculo no dispositivoespecificado
     conn = False

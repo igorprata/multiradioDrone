@@ -1,15 +1,13 @@
 # -*- coding: utf-8 -*-
 from bt_proximity import BluetoothRSSI
 # from BTScan import unique_bt_scan
-
-import time
 import math
 
 
 ########################### Biblioteca que verifica a distância média de um dispositivo Bluetooth (pareados ou não) ###########################
 
 
-def bt_dist_paired(BTaddr, repeticao):
+def bt_dist_paired(BTaddr, full_bt_scan):
 
     n = 1.5  #Path loss exponent(n) = 1.5
     c = 10   #Environment constant(C) = 10
@@ -17,10 +15,9 @@ def bt_dist_paired(BTaddr, repeticao):
     count = 0
     sum_distance = 0
     avg_distance = 0
-    btrssi = BluetoothRSSI(BTaddr)
 
-    for i in range(repeticao):
-        rssi_bt = float(btrssi.get_rssi())
+    for i in full_bt_scan:
+        rssi_bt = float(i)
 #        if(rssi_bt!=0 and i>10):
         if (rssi_bt != 0):                    #reduces initial false values of RSSI using initial delay of 10sec
             count=count+1
@@ -28,7 +25,6 @@ def bt_dist_paired(BTaddr, repeticao):
             distance = (math.pow(10,x) * 100) + c
             sum_distance = sum_distance + distance
             avg_distance = sum_distance / count
-        time.sleep(1)
     return avg_distance
 
 

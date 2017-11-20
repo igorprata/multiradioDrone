@@ -15,6 +15,8 @@ from navio2 import uavstate
 
 
 ##################### Código para OBSERVAR o voo controlado externamente por uma missão #############################
+
+
 parser = argparse.ArgumentParser(description='Comanda o drone em uma rota de voo estabelecida e executa o sensoriamento.')
 
 parser.add_argument('--connect',

@@ -6,7 +6,10 @@ from navegacao import simplegoto, takeoff
 from navio2 import conecta, uavstate
 from tools.Multilateration import multilateration
 
+
 ##################### Código para realizar um Voo controlado #############################
+
+
 parser = argparse.ArgumentParser(description='Comanda o drone em uma rota de voo estabelecida e executa o sensoriamento.')
 
 parser.add_argument('--connect',
