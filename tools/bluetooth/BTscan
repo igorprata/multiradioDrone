@@ -1,0 +1,89 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+from optparse import OptionParser, make_option
+import dbus.mainloop.glib
+try:
+  from gi.repository import GObject
+except ImportError:
+  import gobject as GObject
+import bluezutils
+
+
+##################### Código para OBSERVAR RSSI de dispositivos bluetooth não pareados pareados #############################
+
+
+compact = True
+devices = {}
+
+def print_compact(address, properties):
+	name = ""
+	address = address
+	rssi = ""
+
+	for key, value in properties.items():
+		if (key == "Name"):
+			name = value
+		elif (key == "Address"):
+			address = value
+		elif (key == "RSSI"):
+			rssi = value
+
+	print("%s %s %s" % (address, name, rssi))
+
+##################################################
+
+def properties_changed(interface, changed, invalidated, path):
+	if interface != "org.bluez.Device1":
+		return
+
+	if path in devices:
+		devices[path] = dict(list(devices[path].items()) + list(changed.items()))
+	else:
+		devices[path] = changed
+
+	if "Address" in devices[path]:
+		address = devices[path]["Address"]
+	else:
+		address = "<unknown>"
+
+	print_compact(address, devices[path])
+
+if __name__ == '__main__':
+	dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+
+	bus = dbus.SystemBus()
+
+	option_list = [
+			make_option("-i", "--device", action="store",
+					type="string", dest="dev_id"),
+			make_option("-c", "--compact",
+					action="store_true", dest="compact"),
+			]
+	parser = OptionParser(option_list=option_list)
+
+	(options, args) = parser.parse_args()
+
+	adapter = bluezutils.find_adapter(options.dev_id)
+	print options.compact
+
+	if options.compact:
+		compact = True
+		print "visão compacta"
+
+	bus.add_signal_receiver(properties_changed,
+			dbus_interface = "org.freedesktop.DBus.Properties",
+			signal_name = "PropertiesChanged",
+			arg0 = "org.bluez.Device1",
+			path_keyword = "path")
+
+	om = dbus.Interface(bus.get_object("org.bluez", "/"),
+				"org.freedesktop.DBus.ObjectManager")
+	objects = om.GetManagedObjects()
+	for path, interfaces in objects.items():
+		if "org.bluez.Device1" in interfaces:
+			devices[path] = interfaces["org.bluez.Device1"]
+
+	adapter.StartDiscovery()
+
+	mainloop = GObject.MainLoop()
+	mainloop.run()
