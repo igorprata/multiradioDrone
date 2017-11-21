@@ -40,15 +40,15 @@ def uavstatus (vehicle, output):
             f.write("Satelites: %s\n" % vehicle.gps_0)
         f.close()
 
-def uavsensors (vehicle, repeticao, output):
+def uavsensors (vehicle, output):
 
     latlon = []
     alt = []
 
     if output == "screen":
-        print " Localizacao Global: %s" % vehicle.location.global_frame
+        print " Localização Global: %s" % vehicle.location.global_frame
         print " Rangefinder distance: %s" % vehicle.rangefinder.distance
-        print " Orientacao Local: %s" % vehicle.location.local_frame    #NED
+        print " Orientação Local: %s" % vehicle.location.local_frame    #NED
         print " Altitude (relativa): %s" % vehicle.location.global_relative_frame.alt
         alt.append(vehicle.location.global_relative_frame.alt)
         latlon.append(vehicle.location.global_frame.lat)
@@ -57,19 +57,18 @@ def uavsensors (vehicle, repeticao, output):
     if output == "file":
         with open('uavsensors.dump', "a") as f:
             print "Exibicao dos sensores do VANT somente em arquivo: {}".format(f.name)
-            for n in range(repeticao):
-                timestamp = time.time()
-                f.write(" Amostra numero: {}, ".format(n + 1))
-                f.write(" Timestamp: {}, ".format(timestamp))
-                f.write(" Localizacao Global: %s, " % vehicle.location.global_frame)
-                f.write(" Rangefinder distance: %s, " % vehicle.rangefinder.distance)
-                f.write(" Orientacao Local: %s, " % vehicle.location.local_frame)  # NED
-                f.write(" Altitude (relativa): %s\n" % vehicle.location.global_relative_frame.alt)
-                alt.append(vehicle.location.global_relative_frame.alt)
-                latlon.append(vehicle.location.global_frame.lat)
-                latlon.append(vehicle.location.global_frame.lon)
+            timestamp = time.time()
+            f.write(" Timestamp: {}, ".format(timestamp))
+            f.write(" Localização Global: %s, " % vehicle.location.global_frame)
+            f.write(" Rangefinder distance: %s, " % vehicle.rangefinder.distance)
+            f.write(" Orientação Local: %s, " % vehicle.location.local_frame)  # NED
+            f.write(" Altitude (relativa): %s\n" % vehicle.location.global_relative_frame.alt)
+            alt.append(vehicle.location.global_relative_frame.alt)
+            latlon.append(vehicle.location.global_frame.lat)
+            latlon.append(vehicle.location.global_frame.lon)
             f.close()
         f.closed
+
     return (latlon,alt)
 
 def uav_throttle (vehicle):

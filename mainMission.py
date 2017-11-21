@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 import argparse
 import time
+import sys
+import os
 
 from navio2 import conecta, uavstate
-# from tools.Multilateration import multilateration
+from tools.Multilateration import multilateration
 from dronekit import VehicleMode, LocationGlobalRelative
 from tools import sensores
 # from tools import sensores, camera                      # para habilitar o suporte a cameras
-from tools.IEEE80211 import IEEE80211Dist
-from tools.bluetooth import BTDist
-from navegacao import missionManager, uavCommands
-from navegacao import takeoff
-from navio2 import uavstate
+from tools.IEEE80211 import IEEE80211Dist, IEEE80211scan
+from tools.bluetooth import BTDist, BTscanpaired, BLEscan, BLEDist
+from navegacao import missionManager, uavCommands, takeoff
 
 
 ##################### Código para OBSERVAR o voo controlado externamente por uma missão #############################
@@ -29,6 +29,10 @@ parser.add_argument('--WFaddr',
                     help=" Define qual endereco WIFI será verificado. Padrão:")
 parser.add_argument('--BTaddr',
                     help=" Define qual endereco Bluetooth será verificado. Padrão: 00:02:72:D5:6E:5D")
+parser.add_argument('--BTstandard',
+                    help=" Define qual o padão bluetooth a ser usado (BT ou BLE). Padrão: BLE")
+parser.add_argument('--BTinterface',
+                    help=" Define qual interface bluettoth será usada. Padrão: 0")
 parser.add_argument('--output',
                     help=" Define qual o tipo de saída a ser usada (screen, file ou SQL). Padrão: screen")
 parser.add_argument('--mission_plan',
@@ -41,6 +45,8 @@ repeticao = args.loop
 WFinterface = args.WFinterface
 WFaddr = args.WFaddr
 BTaddr = args.BTaddr
+BTstandard = args.BTstandard
+BTinterface = args.BTinterface
 output = args.output
 mission_plan = args.mission_plan
 
@@ -52,16 +58,26 @@ if not repeticao:
 if not WFinterface:
     WFinterface = "wlp3s0"
 if not WFaddr:
-    # WFaddr = 'C0:3F:0E:D0:D8:15' # igorlandia
-    WFaddr = 'B8:5A:73:A4:E8:9E' # Galaxy Duos
+#    WFaddr = 'C0:3F:0E:D0:D8:15' # igorlandia
+#    WFaddr = 'B8:5A:73:A4:E8:9E' # Galaxy Duos
+    WFaddr = '84:C9:B2:69:97:B2'  # Netgear
 if not BTaddr:
 #    BTaddr = '00:02:72:D5:6E:5D' # rc-control???B8:5A:73:A4:E8:9D
-    BTaddr = 'B8:5A:73:A4:E8:9D'  # Galaxy Duos
+#    BTaddr = 'B8:5A:73:A4:E8:9D'  # Galaxy Duos
+#    BTaddr = 'f4:f5:d8:fc:57:a5'  # BLE vizinho
+    BTaddr = '68:C4:4D:81:6D:02'  # XT1650
+if not BTinterface:
+    BTinterface = 0
+if not BTstandard:
+    BTstandard = "B"
 if not output:
     output = "file"
 if not mission_plan:
     mission_file = "mission.txt"
 
+# Verifica privilégios de ROOT para executar consultas BLE
+if BTstandard == "BLE" and not os.geteuid() == 0:
+    sys.exit("Esse script só pode ser executado com privilégios de root")
 
 # Executa a conexão com a aeronave e recebe a classe vehicle devolta
 veiculo = conecta.conexao(connection_string)
@@ -75,14 +91,15 @@ time.sleep(10)
 ######### !!!!! Área de controle opicional da aeronave (útil para iniciar os testes em ambientes simulados)!!!!! #########
 
 # Carrega uma missão de voo:
-#missionManager.upload_mission(mission_file, veiculo)
+missionManager.upload_mission(mission_file, veiculo)
 
 # Dispara a Funcao de Decolagem
-#takeoff.armandtakeoff(8, veiculo)
-#time.sleep(5)
+takeoff.armandtakeoff(8, veiculo)
+time.sleep(5)
 # Faz o vaículo entrar no modo automático e iniciar a missão
-#veiculo.mode = VehicleMode("AUTO")
-#time.sleep(5)
+veiculo.mode = VehicleMode("AUTO")
+time.sleep(5)
+
 ##########################################################################################################################
 
 
@@ -106,25 +123,26 @@ uavCommands.check_for_home(veiculo)
 
 # Baixa a missão par aum array
 missionlist = missionManager.download_mission(veiculo)
+print "O número de pontos programados para essa missão de voo é: {}".format(veiculo.commands.count)
+
 
 uavlocal = []
 dist_wf = []
 dist_bt = []
 wayPointNum = 0
 pointMiss = 0
+latlon = []
+alt = []
 
 def actions(wayPointNum):
         print "Coleta realizada no Tempo: {}\n".format(time.ctime())
         print "Voando até o ponto: currentwaypoint {} ".format(veiculo._current_waypoint)
-        print "Voando até o ponto: commands next {} ".format(veiculo.commands.next)
-        print "Voando até o ponto: contador interno {} ".format(wayPointNum)
         print " Estado do Sistema: %s" % veiculo.system_status.state
         print " Bateria: %s" % veiculo.battery
         print " GPS: %s" % veiculo.gps_0
         print " Global Location (relative altitude): %s" % veiculo.location.global_relative_frame
-        print '\033[1m' + " Ponto da missao: %s" % veiculo.commands.next
-        print '\033[0m'
 
+#Prepara cabeçalho nos arquivos
         with open('uavsensors.dump', "a") as f:
             f.write("Posição: {}\n".format(veiculo.location.global_relative_frame))
             f.write("Coleta realizada no Tempo: {}\n".format(time.ctime()))
@@ -137,66 +155,82 @@ def actions(wayPointNum):
             f.write("Posição: {}\n".format(veiculo.location.global_relative_frame))
             f.write("Coleta realizada no Tempo: {}\n".format(time.ctime()))
             f.close()
+        with open('blescan.dump', "a") as f:
+            f.write("Posição: {}\n".format(veiculo.location.global_relative_frame))
+            f.write("Coleta realizada no Tempo: {}\n".format(time.ctime()))
+            f.close()
+
+# Coleta pontos onde as coletas foram executadas
         uavlocal.append(sensores.sensors(veiculo, repeticao, WFinterface, BTaddr, output))
 
-        dist_wf_avg = (IEEE80211Dist.wifi_dist(WFinterface, WFaddr, repeticao))
+# Dispara Rotinas WIFI
+        full_wifi_scan = IEEE80211scan.scan_wifi(repeticao, WFinterface, output)
+        print "Terminou de coletar dados WIFI. Agora, calculando a distância"
+        dist_wf_avg = (IEEE80211Dist.wifi_dist(WFaddr, full_wifi_scan))
+        dist_wf.append(dist_wf_avg)
         print "Distância WIFI do alvo ao ponto {}: {}cm".format(wayPointNum, dist_wf_avg)
+
         with open('wifidist.dump', "a") as f:
             f.write("Posição: {}\n".format(veiculo.location.global_relative_frame))
             f.write("Coleta realizada no Tempo: {}\n".format(time.ctime()))
-            f.write("Distância WIFI do alvo é: {}cm".format(dist_wf_avg))
+            f.write("Distância WIFI do alvo é: {}cm\n".format(dist_wf_avg))
             f.close()
 
-        dist_bt_avg = (BTDist.bt_dist_paired(BTaddr, repeticao))
-        print "Distância Bluetooth do alvo ao ponto {}: {}cm".format(wayPointNum, dist_bt_avg)
-        with open('btdist.dump', "a") as f:
-            f.write("Posição: {}\n".format(veiculo.location.global_relative_frame))
-            f.write("Coleta realizada no Tempo: {}\n".format(time.ctime()))
-            f.write("Distância Bluetooth do alvo é: {}cm".format(dist_bt_avg))
-            f.close()
+# Dispara Rotinas BT
+        if BTstandard == "BT":
+            full_bt_scan = BTscanpaired.scan_bluetooth(repeticao, BTaddr, output)
+            print "Terminou de coletar dados Bluetooth. Agora, calculando a distância"
+            dist_bt_avg = BTDist.bt_dist_paired(BTaddr, full_bt_scan)
+            dist_bt.append(dist_bt_avg)
 
+            with open('btdist.dump', "a") as f:
+                f.write("Posição: {}\n".format(veiculo.location.global_relative_frame))
+                f.write("Coleta realizada no Tempo: {}\n".format(time.ctime()))
+                f.write("Distância Bluetooth do alvo é: {}cm\n".format(dist_bt_avg))
+                f.close()
+            print "Distância Bluetooth do alvo ao ponto {}: {}cm".format(wayPointNum, dist_bt_avg)
+
+# Dispara Rotinas BLE
+        elif BTstandard == "BLE":
+            full_ble_scan = BLEscan.scan_ble(repeticao, output, BTinterface)
+            print "Terminou de coletar dados BLE. Agora, calculando a distância"
+            dist_bt_avg = BLEDist.ble_dist(BTaddr, full_ble_scan)
+            dist_bt.append(dist_bt_avg)
+
+            with open('bledist.dump', "a") as f:
+                f.write("Posição: {}\n".format(veiculo.location.global_relative_frame))
+                f.write("Coleta realizada no Tempo: {}\n".format(time.ctime()))
+                f.write("Distância Bluetooth BLE do alvo é: {}cm\n".format(dist_bt_avg))
+                f.close()
+            print "Distância BLE do alvo ao ponto {}: {}cm".format(wayPointNum, dist_bt_avg)
+
+# Dispara Fotos
     #    camera.camera_gimbal(aparelho, "ground", wayPointNum) # Tira uma foto do solo
     #    camera.camera_gimbal(aparelho, "home", wayPointNum) # Tira uma foto do alvo
 
+# Dispara multilateração a cada waypoint a partir de uma certa quantidade de pontos coletados
+        if len(uavlocal) >= 3:
+            for x in uavlocal:
+                latlon.append(x[0])
+                alt.append(x[1])
+            multilateration.multilateration(latlon, dist_wf)
 
         wayPointNum = veiculo._current_waypoint
-        time.sleep(1)
         return wayPointNum
 
-
-print "O número de pontos programados para essa missão de voo é: {}".format(veiculo.commands.count)
 
 while veiculo.mode == VehicleMode("AUTO"):
     if veiculo._current_waypoint in (3 ,5, 7, 9, 11, 13) and veiculo._current_waypoint>wayPointNum:
         wayPointNum = actions(veiculo._current_waypoint)
         print "Executada coleta no ponto wayPointNum {}".format(wayPointNum)
-    if veiculo._current_waypoint == 15:
+    if veiculo._current_waypoint == veiculo.commands.count:
         print "Alcançou o último ponto da missão"
         break
     else:
         print "Coleta não executada. Ainda não chegou no ponto certo!"
-        pointMiss +=1
-        time.sleep(2)
+        time.sleep(3)
 
-
-# Dispara método de multilateração final com todos os resultados finais e distâncias WIFI
-
-# dist_wf = results[0]
-# dist_bt = results[1]
-# latlon = []
-# alt = []
-#
-# for x in results[2]:
-#     latlon.append(x[0])
-#     alt.append(x[1])
-# Amostras do Fabio Costa
-#latlon = [(-22.86985120,-43.1051227),(-22.86983310,-43.1051285),(-22.86984080,-43.1051355),(-22.86983130,-43.1051311),(-22.86984440,-43.1051408),(-22.86987940,-43.1051325),(-22.86986800,-43.1051353),(-22.86986740,-43.1051099),(-22.86982530,-43.1051313),(-22.86986990,-43.1051268),(-22.86987800,-43.1051076),(-22.86984740,-43.1051061),(-22.86984480,-43.1051351),(-22.86984460,-43.1051185),(-22.86986010,-43.1051341),(-22.86987300,-43.1051315),(-22.86985720,-43.1051022),(-22.86986560,-43.1051251),(-22.86986950,-43.1051279),(-22.86987230,-43.1051344),(-22.86984940,-43.1051007),(-22.86984500,-43.1051201),(-22.86992110,-43.1050613),(-22.86984650,-43.1050980),(-22.86997450,-43.1050409),(-22.86984980,-43.1050972),(-22.86989680,-43.1050272),(-22.86984260,-43.1050673),(-22.86982940,-43.1050112),(-22.86996080,-43.1050254)]
-#dist_wf = (0.000251189,0.000271227,0.000292864,0.000316228,0.000316228,0.000398107,0.000398107,0.000398107,0.000398107,0.000429866,0.000429866,0.000464159,0.000464159,0.000501187,0.000681292,0.000735642,0.000926119,0.001000000,0.001079775,0.001165914,0.001165914,0.001847850,0.001847850,0.002712273,0.002712273,0.002928645,0.002928645,0.003162278,0.003981072,0.005843414)
-
-#multilateration.multilateration(latlon, dist_wf)
-
-print "Quantidade de coletas não disparadas: {}".format(pointMiss)
-# Fecha o objeto veiculo antes de termianr o script
+# Fecha o objeto veiculo antes de terminar o script
 print("Desconectando do Veículo")
 veiculo.close()
 
