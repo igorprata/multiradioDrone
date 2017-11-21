@@ -126,13 +126,15 @@ missionlist = missionManager.download_mission(veiculo)
 print "O número de pontos programados para essa missão de voo é: {}".format(veiculo.commands.count)
 
 
-uavlocal = []
-dist_wf = []
-dist_bt = []
-wayPointNum = 0
-pointMiss = 0
-latlon = []
-alt = []
+uavlocal = []   # Vetor de coordenadas onde foram realizadas as coletas
+latlon = []     # Vetor de coordenadas Latitude e Londitude (apenas) onde foram realizadas as coletas
+alt = []        # Vetor de altitudes (apenas) onde foram realizadas as coletas
+dist_wf = []    # Em cm, como retornado pelo aloritmo de distância
+dist_wf_km = [] # Em kilômetros para o algoritimo de multlateração
+dist_bt = []    # Em cm, como retornado pelo aloritmo de distância
+dist_bt_km =[]  # Em kilômetros para o algoritimo de multlateração
+wayPointNum = 0 # Contador de Número de coletas realizadas
+
 
 def actions(wayPointNum):
         print "Coleta realizada no Tempo: {}\n".format(time.ctime())
@@ -168,6 +170,7 @@ def actions(wayPointNum):
         print "Terminou de coletar dados WIFI. Agora, calculando a distância"
         dist_wf_avg = (IEEE80211Dist.wifi_dist(WFaddr, full_wifi_scan))
         dist_wf.append(dist_wf_avg)
+        dist_wf_km.append(dist_wf_avg / 100000)
         print "Distância WIFI do alvo ao ponto {}: {}cm".format(wayPointNum, dist_wf_avg)
 
         with open('wifidist.dump', "a") as f:
@@ -182,7 +185,7 @@ def actions(wayPointNum):
             print "Terminou de coletar dados Bluetooth. Agora, calculando a distância"
             dist_bt_avg = BTDist.bt_dist_paired(BTaddr, full_bt_scan)
             dist_bt.append(dist_bt_avg)
-
+            dist_bt_km.append(dist_bt_avg / 100000)
             with open('btdist.dump', "a") as f:
                 f.write("Posição: {}\n".format(veiculo.location.global_relative_frame))
                 f.write("Coleta realizada no Tempo: {}\n".format(time.ctime()))
@@ -196,7 +199,7 @@ def actions(wayPointNum):
             print "Terminou de coletar dados BLE. Agora, calculando a distância"
             dist_bt_avg = BLEDist.ble_dist(BTaddr, full_ble_scan)
             dist_bt.append(dist_bt_avg)
-
+            dist_bt_km.append(dist_bt_avg / 100000)
             with open('bledist.dump', "a") as f:
                 f.write("Posição: {}\n".format(veiculo.location.global_relative_frame))
                 f.write("Coleta realizada no Tempo: {}\n".format(time.ctime()))
@@ -213,7 +216,7 @@ def actions(wayPointNum):
             for x in uavlocal:
                 latlon.append(x[0])
                 alt.append(x[1])
-            multilateration.multilateration(latlon, dist_wf)
+            multilateration.multilateration(latlon, dist_wf_km)  # mudar para a distância medida pela fusão de sensores
 
         wayPointNum = veiculo._current_waypoint
         return wayPointNum
