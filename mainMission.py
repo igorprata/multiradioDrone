@@ -183,7 +183,7 @@ def actions(wayPointNum):
         if BTstandard == "BT":
             full_bt_scan = BTscanpaired.scan_bluetooth(repeticao, BTaddr, output)
             print "Terminou de coletar dados Bluetooth. Agora, calculando a distância"
-            dist_bt_avg = BTDist.bt_dist_paired(BTaddr, full_bt_scan)
+            dist_bt_avg = BTDist.bt_dist_paired(full_bt_scan)
             dist_bt.append(dist_bt_avg)
             dist_bt_km.append(dist_bt_avg / 100000)
             with open('btdist.dump', "a") as f:

@@ -15,9 +15,8 @@ def ble_dist(BLEaddr, full_ble_scan):
     avg_distance = 0
 
     for ble_ap in full_ble_scan:
-        if ble_ap[0] == BLEaddr:
+        if ble_ap[0].lower() == BLEaddr.lower():
             rssi_ble = float(ble_ap[3])
-            print "teste {}".format(rssi_ble)
             if (rssi_ble != 0):                    #reduces initial false values of RSSI using initial delay of 10sec
                 count = count + 1
                 x = float((rssi_ble-A0)/(-10*n))         #Log Normal Shadowing Model considering d0 =1m where

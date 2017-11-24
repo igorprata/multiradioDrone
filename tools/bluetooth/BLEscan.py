@@ -71,7 +71,7 @@ def unique_ble_scan(BTaddr, bt_dev_id, repeticao):
     returnedList = BLEScanLib.parse_events(sock, repeticao)
 
     for beacon in returnedList:
-        if beacon[0] == BTaddr:
+        if beacon[0].lower() == BTaddr.lower():
             ble_rssi = beacon[3]
             print "Timestamp: {}, Endereco: {}, RSSI: {}".format(time.time(), beacon[0], ble_rssi)
     BLEScanLib.hci_disable_le_scan(sock)

@@ -57,15 +57,15 @@ if not BTinterface:
     BTinterface = 0
 if not WFaddr:
 #    WFaddr = 'C0:3F:0E:D0:D8:15' # igorlandia
-#    WFaddr = 'B8:5A:73:A4:E8:9E' # Galaxy Duos
-    WFaddr = '84:C9:B2:69:97:B2' # Netgear
+    WFaddr = 'B8:5A:73:A4:E8:9E' # Galaxy Duos
+#    WFaddr = '84:C9:B2:69:97:B2' # Netgear
 if not BTaddr:
 #    BTaddr = '00:02:72:D5:6E:5D' # rc-control???B8:5A:73:A4:E8:9D
-#    BTaddr = 'B8:5A:73:A4:E8:9D'  # Galaxy Duos
+    BTaddr = 'B8:5A:73:A4:E8:9D'  # Galaxy Duos
 #    BTaddr = 'f4:f5:d8:fc:57:a5'  # BLE vizinho
-    BTaddr = '68:C4:4D:81:6D:02'  # XT1650
+#    BTaddr = '68:C4:4D:81:6D:02'  # XT1650
 if not BTstandard:
-    BTstandard = "BT"
+    BTstandard = "BLE"
 if not output:
     output = "file"
 
@@ -121,6 +121,7 @@ if BTstandard == "BLE":
         f.write("Coleta realizada no Tempo: {}\n".format(time.ctime()))
         f.write("Distância Bluetooth BLE do alvo é: {}cm\n".format(dist_bt_avg))
         f.close()
+        print "Distância bluetooth do alvo é: {}cm".format(dist_bt_avg)
 
 elif BTstandard == "BT":
     with open('btscan.dump', "a") as f:
@@ -129,14 +130,14 @@ elif BTstandard == "BT":
         f.close()
     full_bt_scan = BTscanpaired.scan_bluetooth(repeticao, BTaddr, output)
     print "Terminou de coletar dados Bluetooth. Agora, calculando a distância"
-    dist_bt_avg = BTDist.bt_dist_paired(BTaddr, full_bt_scan)
+    dist_bt_avg = BTDist.bt_dist_paired(full_bt_scan)
     with open('btdist.dump', "a") as f:
         f.write("Posição: {}\n".format(veiculo.location.global_relative_frame))
         f.write("Coleta realizada no Tempo: {}\n".format(time.ctime()))
         f.write("Distância Bluetooth do alvo é: {}cm\n".format(dist_bt_avg))
         f.close()
+    print "Distância bluetooth do alvo é: {}cm".format(dist_bt_avg)
 
-print "Distância bluetooth do alvo é: {}cm".format(dist_bt_avg)
 
 
 # Amostras Estáticas previamente tiradas
@@ -147,11 +148,11 @@ print "Distância bluetooth do alvo é: {}cm".format(dist_bt_avg)
 # latlon = [(-20.7463786,-41.2290764),(-20.7465702,-41.2290774),(-20.7465712,-41.2293447),(-20.7463795,-41.2293439)]
 # dist_wf = (0.0130352714943,0.0163173436884,0.00627227441873,0.0041974967925)
 
-latlon = [(-20.7463768,-41.2290752),(-20.746569,-41.2290756),(-20.7465713,-41.2293429),(-20.7463788,-41.2293451)]
-dist_bt = (0.0162113117382,0.0369645139601,0.025944144831,0.0191378229595)
+#latlon = [(-20.7463768,-41.2290752),(-20.746569,-41.2290756),(-20.7465713,-41.2293429),(-20.7463788,-41.2293451)]
+#dist_bt = (0.0162113117382,0.0369645139601,0.025944144831,0.0191378229595)
 
 # Dispara método de multilateração final com todos os resultados finais e distâncias WIFI
-multilateration.multilateration(latlon, dist_bt)
+#multilateration.multilateration(latlon, dist_bt)
 
 
 # Fecha o objeto veiculo antes de terminar o script

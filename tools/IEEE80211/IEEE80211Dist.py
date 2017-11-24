@@ -16,7 +16,7 @@ def wifi_dist(WFaddr, full_wifi_scan):
 
     for scan_repetition in full_wifi_scan:
         for wifi_ap in scan_repetition:
-            if wifi_ap[0] == WFaddr:
+            if wifi_ap[0].lower() == WFaddr.lower():
                 rssi_wf = wifi_ap[1]
                 if (rssi_wf != 0):  # Evita contabilizar valores ZERO em certas interfaces de rede
                     count = count + 1

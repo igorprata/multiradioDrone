@@ -7,7 +7,7 @@ import math
 ########################### Biblioteca que verifica a distância média de um dispositivo Bluetooth (pareados ou não) ###########################
 
 
-def bt_dist_paired(BTaddr, full_bt_scan):
+def bt_dist_paired(full_bt_scan):
 
     n = 1.5  #Path loss exponent(n) = 1.5
     c = 10   #Environment constant(C) = 10
